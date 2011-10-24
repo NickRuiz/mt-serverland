@@ -7,7 +7,8 @@ import socket
 import subprocess
 
 from os import remove
-from django.forms import ModelForm, ValidationError, FileField, ChoiceField, ModelChoiceField
+from django.forms import ModelForm, ValidationError, FileField, ChoiceField, \
+  ModelChoiceField
 from serverland.dashboard.models import TranslationRequest, WorkerServer
 from serverland.settings import LOG_LEVEL, LOG_HANDLER
 
@@ -102,6 +103,9 @@ class TranslationRequestForm(ModelForm):
 
         worker = self.cleaned_data.get('worker')
 
+        if worker and worker.is_busy():
+            raise ValidationError('Worker is currently busy!')
+
         if worker and not (source, target) in worker.language_pairs():
             raise ValidationError('Worker does not support language pair!')
 
@@ -169,6 +173,6 @@ class TranslationRequestForm(ModelForm):
         remove('/tmp/{0}'.format(data.name))
 
         if not mime_type.startswith("text/"):
-             raise ValidationError("You can only upload text files.")
+            raise ValidationError("You can only upload text files.")
 
         return data
