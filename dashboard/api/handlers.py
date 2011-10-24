@@ -49,6 +49,7 @@ class RequestHandler(BaseHandler):
     def create(self, request, shortname = None, results = False):
         '''Handles a POST request to create a new translation request.'''
         if shortname is not None or results:
+            print "Precondition problem"
             return rc.BAD_REQUEST
         print 'CREATE content-type', request.content_type # DEBUG
         # get the data from the POST request
@@ -61,6 +62,7 @@ class RequestHandler(BaseHandler):
                 postdata['worker'] = str(WorkerServer.objects.get(
                     shortname=postdata['worker']).id)
             except ObjectDoesNotExist:
+                print "Worker ID not specified"
                 return rc.BAD_REQUEST
         # check whether the translation request is a duplicate
         if 'shortname' in postdata:
@@ -75,8 +77,11 @@ class RequestHandler(BaseHandler):
         form = TranslationRequestForm(request.user, postdata, request.FILES)
         try:
             if not form.is_valid():
+                print "Form validation error"
+                print form.errors
                 return rc.BAD_REQUEST
         except KeyError:
+            print "Key error"
             return rc.BAD_REQUEST
         # create a new request object
         new = TranslationRequest()
